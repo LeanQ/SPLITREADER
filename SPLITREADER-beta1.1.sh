@@ -38,13 +38,13 @@ CORES=2
 InputDir=./
 OutputDir=./
 
-#list of TEs to analize
-listDir=/.
+#list of TEs to analyze
+listDir=./
 
-#Bowtie2 index files for each TE sequence
-SequencesDir=/.
+#Folder containing the Bowtie2 index for each TE sequence
+SequencesDir=./
 
-#Bowtie2 index file for reference genome
+#Bowtie2 index for reference genome
 GenomeIndexFile=./TAIR10index
 
 #Coordinates of inner pericentromeres 
@@ -58,7 +58,7 @@ TmpDir=./QD-$IDPID
 mkdir -p $TmpDir
 
 
-###If required, stimating whole genome coverage and TE insertion tresholds
+###If required, estimating whole genome coverage and TE insertion tresholds
   if [ -z "$READS" ]
      then
      samtools depth $InputDir/$1.bam > $TmpDir/coverage.temp
