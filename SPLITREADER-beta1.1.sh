@@ -9,7 +9,7 @@
 
 
 #############################################################
-#IN THE FOLLOWING VARIABLE YOU CAN EXPLICITE THE MINIMUM READ LEGTH. By default this is 100nt
+#IN THE FOLLOWING VARIABLE YOU CAN PROVIDE THE MINIMUM READ LEGTH. By default this is 100nt
 LENGTH=100
 
 #### If not specified, the program calculate teh longer read
