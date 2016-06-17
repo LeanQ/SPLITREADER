@@ -8,7 +8,6 @@
 #                                           # 
 #############################################
 
-##Leandro Quadrana
 ##Questions or comments to quadrana(ar)biologie.ens.fr
 
 #$1 -> basename of the bam file (i.e. if the file is "sequencing.bam", you should enter only "sequencing")
