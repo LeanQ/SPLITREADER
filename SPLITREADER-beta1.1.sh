@@ -4,8 +4,8 @@
 
 #$1 -> basename of the bam file (i.e. if the file is "sequencing.bam", you should enter only "sequencing")
 
-#TE-> should be indicated in the first column of the TE-information.txt file located in SequencesDir
-#TSD -> should be indicated in the second column of the TE-information.txt file located in SequencesDir
+#TE-> should be indicated in the first column of the TE-information.txt file located in listDir
+#TSD -> should be indicated in the second column of the TE-information.txt file located in listDir
 
 
 #############################################################
