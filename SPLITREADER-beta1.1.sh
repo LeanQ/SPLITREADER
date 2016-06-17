@@ -116,7 +116,7 @@ for ((l=1; $l<=$end; l=$l+1)); do
     samtools view -F 4 -S $TmpResultsDir/$1-$TE.sam | awk '$6~S {print $0}' >> $TmpResultsDir/$1-$TE-split.sam
     rm -f $TmpResultsDir/$1-$TE.sam
 
-    java -jar /groups/a2e/Leandro/split-analysis/SamToFastq.jar INPUT=$TmpResultsDir/$1-$TE-split.sam FASTQ=$TmpResultsDir/$1-$TE-split.fastq
+    java -jar ./SamToFastq.jar INPUT=$TmpResultsDir/$1-$TE-split.sam FASTQ=$TmpResultsDir/$1-$TE-split.fastq
     rm -f $TmpResultsDir/$1-$TE-split.sam
 
     ###Stimating max read size (If necessary)
