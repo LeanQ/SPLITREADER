@@ -61,7 +61,7 @@ mkdir -p $TmpDir
 ###If required, estimating whole genome coverage and TE insertion tresholds
   if [ -z "$READS" ]
      then
-     samtools depth $InputDir/$1.bam > $TmpDir/coverage.temp
+     samtools depth $InputDir/$1.bam > $TmpDir/coverage.temp 2> $TmpDir/log.txt
       co=`awk '{sum+=$3} END { print int(sum/NR)}' $TmpDir/coverage.temp`
       sd=`awk '{sum+=$3; sumsq+=$3*$3} END { print int(sqrt(sumsq/NR - (sum/NR)**2))}' $TmpDir/coverage.temp`
       cov=$((co-3*sd))
@@ -71,10 +71,10 @@ mkdir -p $TmpDir
        if [ $cov -gt 6 ]
 	then
 	  READS=$cov
-	  "Minimum number of Reads in split-reads cluster: $READS [Estimated] "
+	  echo "Minimum number of Reads in split-reads cluster: $READS [Estimated] "
 	else
 	  READS=6
-	  "Minimum number of Reads in split-reads cluster:  $READS [Default]"
+	  echo "Minimum number of Reads in split-reads cluster:  $READS [Default]"
 	fi
       else
       echo "Minimum number of Reads in split-reads cluster:  $READS [User defined]"
@@ -84,7 +84,7 @@ mkdir -p $TmpDir
 #Extracting unmapped reads
 echo "Extracting unmapped reads from $1"
 
-samtools view -f 4 -u $InputDir/$1.bam | bamToFastq -bam stdin -fq1 $TmpDir/$1.1.fastq -fq2 $TmpDir/$1.2.fastq
+samtools view -f 4 -u $InputDir/$1.bam | bamToFastq -bam stdin -fq1 $TmpDir/$1.1.fastq -fq2 $TmpDir/$1.2.fastq 2>> $TmpDir/log.txt
 
 end=`wc -l $listDir/TE-information.txt | awk '{print $1}'`
 
@@ -108,18 +108,19 @@ for ((l=1; $l<=$end; l=$l+1)); do
    
    echo "Selecting split-reads"
    
-    bowtie2 -x $SequencesDir/$TE -U $TmpDir/$1.1.fastq,$TmpDir/$1.2.fastq -S $TmpResultsDir/$1-$TE.sam --local --very-sensitive --threads $CORES 
+    bowtie2 -x $SequencesDir/$TE -U $TmpDir/$1.1.fastq,$TmpDir/$1.2.fastq -S $TmpResultsDir/$1-$TE.sam --local --very-sensitive --threads $CORES 2>> $TmpDir/log.txt
    
-    T=$(awk '$1~/@/ {x++} END {print x}' $TmpResultsDir/$1-$TE.sam)
+    samtools view -H -S $TmpResultsDir/$1-$TE.sam > $TmpResultsDir/$1-$TE-split.sam 2>> $TmpDir/log.txt
+    
+    ###filter soft-clipped reads with at least 20nt softclipped at 5' or 3' read's end 
+    samtools view -F 4 -S $TmpResultsDir/$1-$TE.sam | awk '$6~/^[2-8][0-9]S/ || $6~/[2-8][0-9]S$/ {print $0}' >> $TmpResultsDir/$1-$TE-split.sam 2>> $TmpDir/log.txt
 
-    samtools view -h -S $TmpResultsDir/$1-$TE.sam | head -$T > $TmpResultsDir/$1-$TE-split.sam 
-    samtools view -F 4 -S $TmpResultsDir/$1-$TE.sam | awk '$6~S {print $0}' >> $TmpResultsDir/$1-$TE-split.sam
     rm -f $TmpResultsDir/$1-$TE.sam
-
-    java -jar ./SamToFastq.jar INPUT=$TmpResultsDir/$1-$TE-split.sam FASTQ=$TmpResultsDir/$1-$TE-split.fastq
+    ####extract soft-clipped reads
+    java -jar ./SamToFastq.jar INPUT=$TmpResultsDir/$1-$TE-split.sam FASTQ=$TmpResultsDir/$1-$TE-split.fastq 2>> $TmpDir/log.txt
     rm -f $TmpResultsDir/$1-$TE-split.sam
 
-    ###Stimating max read size (If necessary)
+    ###Estimating max read size (If necessary)
     
     if [ -z "$LENGTH" ]
      then
@@ -138,8 +139,8 @@ for ((l=1; $l<=$end; l=$l+1)); do
       
    echo "Mapping 5' split-reads on reference genome"
    echo -ne "Progresssion: ["
-    bowtie2 -x $GenomeIndexFile -U $TmpResultsDir/$1-$TE-split.fastq -S $TmpResultsDir/$1-$TE-splitjunction-3-20.sam --un $TmpResultsDir/$1-$TE-split-3-20 --quiet -3 20 --mp 13 --rdg 8,5 --rfg 8,5 --very-sensitive --threads $CORES
-    samtools view -q 5 -Sbu $TmpResultsDir/$1-$TE-splitjunction-3-20.sam | samtools sort - $TmpResultsDir/$1-$TE-splitjunction-3-20
+    bowtie2 -x $GenomeIndexFile -U $TmpResultsDir/$1-$TE-split.fastq -S $TmpResultsDir/$1-$TE-splitjunction-3-20.sam --un $TmpResultsDir/$1-$TE-split-3-20 --quiet -3 20 --mp 13 --rdg 8,5 --rfg 8,5 --very-sensitive --threads $CORES 2>> $TmpDir/log.txt
+    samtools view -q 5 -Sbu $TmpResultsDir/$1-$TE-splitjunction-3-20.sam | samtools sort - $TmpResultsDir/$1-$TE-splitjunction-3-20 2>> $TmpDir/log.txt
     rm -f $TmpResultsDir/$1-$TE-splitjunction-3-20.sam
     
     
@@ -149,8 +150,8 @@ for ((l=1; $l<=$end; l=$l+1)); do
     
       previous=$(($i-1));
 
-      bowtie2 -x $GenomeIndexFile -U $TmpResultsDir/$1-$TE-split-3-$previous -S $TmpResultsDir/$1-$TE-splitjunction-3-$i.sam --un $TmpResultsDir/$1-$TE-split-3-$i --quiet -3 $i --mp 13 --rdg 8,5 --rfg 8,5 --very-sensitive
-      samtools view -q 5 -Sbu $TmpResultsDir/$1-$TE-splitjunction-3-$i.sam | samtools sort - $TmpResultsDir/$1-$TE-splitjunction-3-$i 
+      bowtie2 -x $GenomeIndexFile -U $TmpResultsDir/$1-$TE-split-3-$previous -S $TmpResultsDir/$1-$TE-splitjunction-3-$i.sam --un $TmpResultsDir/$1-$TE-split-3-$i --quiet -3 $i --mp 13 --rdg 8,5 --rfg 8,5 --very-sensitive 2>> $TmpDir/log.txt
+      samtools view -q 5 -Sbu $TmpResultsDir/$1-$TE-splitjunction-3-$i.sam | samtools sort - $TmpResultsDir/$1-$TE-splitjunction-3-$i 2>> $TmpDir/log.txt
       rm -f $TmpResultsDir/$1-$TE-splitjunction-3-$i.sam
       rm -f $TmpResultsDir/$1-$TE-split-3-$previous
     done
@@ -174,8 +175,8 @@ for ((l=1; $l<=$end; l=$l+1)); do
     
       previous=$(($i-1));
 
-      bowtie2 -x $GenomeIndexFile -U $TmpResultsDir/$1-$TE-split-5-$previous -S $TmpResultsDir/$1-$TE-splitjunction-5-$i.sam --un $TmpResultsDir/$1-$TE-split-5-$i --quiet -5 $i --mp 13 --rdg 8,5 --rfg 8,5 --very-sensitive --threads $CORES
-      samtools view -q 5 -Sbu $TmpResultsDir/$1-$TE-splitjunction-5-$i.sam | samtools sort - $TmpResultsDir/$1-$TE-splitjunction-5-$i
+      bowtie2 -x $GenomeIndexFile -U $TmpResultsDir/$1-$TE-split-5-$previous -S $TmpResultsDir/$1-$TE-splitjunction-5-$i.sam --un $TmpResultsDir/$1-$TE-split-5-$i --quiet -5 $i --mp 13 --rdg 8,5 --rfg 8,5 --very-sensitive --threads $CORES 2>> $TmpDir/log.txt
+      samtools view -q 5 -Sbu $TmpResultsDir/$1-$TE-splitjunction-5-$i.sam | samtools sort - $TmpResultsDir/$1-$TE-splitjunction-5-$i 2>> $TmpDir/log.txt
       rm -f $TmpResultsDir/$1-$TE-splitjunction-5-$i.sam
       rm -f $TmpResultsDir/$1-$TE-split-5-$previous
     done
@@ -189,32 +190,32 @@ for ((l=1; $l<=$end; l=$l+1)); do
     rm -f $TmpResultsDir/$1-$TE-split.fastq
 
     # Merging and sorting bam files
-    samtools merge -u $TmpResultsDir/$1-$TE-split-5.bam $TmpResultsDir/$1-$TE-splitjunction-5-*.bam
-    samtools merge -u $TmpResultsDir/$1-$TE-split-3.bam $TmpResultsDir/$1-$TE-splitjunction-3-*.bam
-    samtools sort $TmpResultsDir/$1-$TE-split-5.bam $TmpResultsDir/$1-$TE-split-5
-    samtools sort $TmpResultsDir/$1-$TE-split-3.bam $TmpResultsDir/$1-$TE-split-3
-    samtools index $TmpResultsDir/$1-$TE-split-5.bam
-    samtools index $TmpResultsDir/$1-$TE-split-3.bam 
+    samtools merge -u $TmpResultsDir/$1-$TE-split-5.bam $TmpResultsDir/$1-$TE-splitjunction-5-*.bam 2>> $TmpDir/log.txt
+    samtools merge -u $TmpResultsDir/$1-$TE-split-3.bam $TmpResultsDir/$1-$TE-splitjunction-3-*.bam 2>> $TmpDir/log.txt
+    samtools sort $TmpResultsDir/$1-$TE-split-5.bam $TmpResultsDir/$1-$TE-split-5 2>> $TmpDir/log.txt
+    samtools sort $TmpResultsDir/$1-$TE-split-3.bam $TmpResultsDir/$1-$TE-split-3 2>> $TmpDir/log.txt
+    samtools index $TmpResultsDir/$1-$TE-split-5.bam 2>> $TmpDir/log.txt
+    samtools index $TmpResultsDir/$1-$TE-split-3.bam 2>> $TmpDir/log.txt
     rm -f $TmpResultsDir/$1-$TE-splitjunction-[35]-*.bam
     
     # merge reads that were cliped at the 3' and mapped in the + strand with those clipped at the 5' and mapped on the - strand
     # merge reads that were cliped at the 3' and mapped in the - strand with those clipped at the 5' and mapped on the + strand
     
       echo "Searching for reads clusters..."
-    samtools view -F 16 -bh $TmpResultsDir/$1-$TE-split-5.bam > $TmpResultsDir/$1-$TE-split-5+.bam
-    samtools view -f 16 -bh $TmpResultsDir/$1-$TE-split-5.bam > $TmpResultsDir/$1-$TE-split-5-.bam
-    samtools view -F 16 -bh $TmpResultsDir/$1-$TE-split-3.bam > $TmpResultsDir/$1-$TE-split-3+.bam
-    samtools view -f 16 -bh $TmpResultsDir/$1-$TE-split-3.bam > $TmpResultsDir/$1-$TE-split-3-.bam
+    samtools view -F 16 -bh $TmpResultsDir/$1-$TE-split-5.bam > $TmpResultsDir/$1-$TE-split-5+.bam 2>> $TmpDir/log.txt
+    samtools view -f 16 -bh $TmpResultsDir/$1-$TE-split-5.bam > $TmpResultsDir/$1-$TE-split-5-.bam 2>> $TmpDir/log.txt
+    samtools view -F 16 -bh $TmpResultsDir/$1-$TE-split-3.bam > $TmpResultsDir/$1-$TE-split-3+.bam 2>> $TmpDir/log.txt
+    samtools view -f 16 -bh $TmpResultsDir/$1-$TE-split-3.bam > $TmpResultsDir/$1-$TE-split-3-.bam 2>> $TmpDir/log.txt
 
     
     #Merge the 5' and 3' clusters to create the downstream and upstream cluster
 
-    samtools merge $TmpResultsDir/$1-$TE-up.bam $TmpResultsDir/$1-$TE-split-5-.bam $TmpResultsDir/$1-$TE-split-3+.bam
-    samtools merge $TmpResultsDir/$1-$TE-down.bam $TmpResultsDir/$1-$TE-split-5+.bam $TmpResultsDir/$1-$TE-split-3-.bam
+    samtools merge $TmpResultsDir/$1-$TE-up.bam $TmpResultsDir/$1-$TE-split-5-.bam $TmpResultsDir/$1-$TE-split-3+.bam 2>> $TmpDir/log.txt
+    samtools merge $TmpResultsDir/$1-$TE-down.bam $TmpResultsDir/$1-$TE-split-5+.bam $TmpResultsDir/$1-$TE-split-3-.bam 2>> $TmpDir/log.txt
 
-    #Calculate de coverage over mapped regions - filter regions according to minimum and maximum read-depth
-    samtools depth $TmpResultsDir/$1-$TE-up.bam | awk -v m=$READS M=$maxcov '$3>=(m/2) $$ $3<(M/2) {print $1 "\t" $2 "\t"$2"\t"$3}' > $TmpResultsDir/$1-$TE-up.bed
-    samtools depth $TmpResultsDir/$1-$TE-down.bam | awk -v m=$READS M=$maxcov '$3>=(m/2) $$ $3<(M/2) {print $1 "\t" $2 "\t"$2"\t"$3}' > $TmpResultsDir/$1-$TE-down.bed
+    #Calculate the coverage over mapped regions - filter regions according to minimum and maximum read-depth
+    samtools depth $TmpResultsDir/$1-$TE-up.bam | awk -v m=$READS M=$maxcov '$3>=(m/2) $$ $3<(M/2) {print $1 "\t" $2 "\t"$2"\t"$3}' > $TmpResultsDir/$1-$TE-up.bed 2>> $TmpDir/log.txt
+    samtools depth $TmpResultsDir/$1-$TE-down.bam | awk -v m=$READS M=$maxcov '$3>=(m/2) $$ $3<(M/2) {print $1 "\t" $2 "\t"$2"\t"$3}' > $TmpResultsDir/$1-$TE-down.bed 2>> $TmpDir/log.txt
 
     #merge cluster of covered regions - filter out clusters that are longer than read-length
     sort -k 1,1 -k2,2n $TmpResultsDir/$1-$TE-up.bed | mergeBed -i stdin | awk -v L=$length '$3-$2<L {print $0}' > $TmpResultsDir/$1-$TE-up-merge-temp.bed
@@ -242,11 +243,11 @@ for ((l=1; $l<=$end; l=$l+1)); do
       
       echo "Split-read analyis done: $INSERTIONS putative insertions identified..."
 
-    cp $TmpResultsDir/$1-$TE-split-[35].bam* $OutputDir/ ###moving splitread mapped files to the output folder 
+    ###merging bam files and moving them to the output folder 
+    samtools merge $TmpResultsDir/$1-$TE-split.bam $TmpResultsDir/$1-$TE-split-[35].bam 2>> $TmpDir/log.txt
+    samtools sort $TmpResultsDir/$1-$TE-split.bam $OutputDir/$1-$TE-split 2>> $TmpDir/log.txt
+    samtools index $OutputDir/$1-$TE-split.bam 2>> $TmpDir/log.txt
 
-    rm -f $TmpResultsDir/$1-$TE-up-merge.bed
-    rm -f $TmpResultsDir/$1-$TE-down-merge.bed
-    rm -f $TmpResultsDir/$TE-donnor.txt
     rm -r -f $TmpResultsDir
 
     ENDTIME=$(date +%s)
