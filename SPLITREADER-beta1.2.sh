@@ -40,7 +40,7 @@ CORES=2
 
 # Path to configure (by default it is the current directory)
 
-InputDir=/groups/a2e/Leandro
+InputDir=./
 OutputDir=./
 
 #list of TEs to analyze
