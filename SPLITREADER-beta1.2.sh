@@ -62,7 +62,7 @@ samtoolsDir=/usr/local/bin
 #bedtools executable path
 bedtoolsdir=/usr/local/bin
 #picard tools executable path
-picardDir=/groups/a2e/Leandro/split-analysis
+picardDir=./picard-tools-1.99
 
 
 # PID of this batch
