@@ -61,6 +61,9 @@ Bowtie2Dir=/usr/local/bin/bowtie2
 samtoolsDir=/usr/bin/samtools
 #bedtools executable path
 bedtoolsdir=/usr/local/bin/bedtools
+#picard tools executable path
+picardDir=./
+
 
 
 
@@ -102,17 +105,17 @@ $samtoolsDir/samtools view -f 4 -u $InputDir/$1.bam > $TmpDir/$1.bam 2>> $TmpDir
 if [ -z "$pe" ]
 then
 
- 	java -jar ./SamToFastq.jar INPUT=$TmpDir/$1.bam FASTQ=$TmpDir/$1.fastq  2>> $TmpDir/log.txt
+ 	java -jar $picardDir/SamToFastq.jar INPUT=$TmpDir/$1.bam FASTQ=$TmpDir/$1.fastq  2>> $TmpDir/log.txt
 else
- 	java -jar ./SamToFastq.jar INPUT=$TmpDir/$1.bam fastq.output.file.1=FASTQ=$TmpDir/$1.1.fastq fastq.output.file.2=FASTQ=$TmpDir/$1.2.fastq 2>> $TmpDir/log.txt
+ 	java -jar $picardDir/SamToFastq.jar INPUT=$TmpDir/$1.bam FASTQ=$TmpDir/$1.1.fastq SECOND_END_FASTQ=$TmpDir/$1.2.fastq 2>> $TmpDir/log.txt
 
- 	cat $TmpDir/$1.1.fastq FASTQ=$TmpDir/$1.2.fastq > $TmpDir/$1.fastq
+ 	cat $TmpDir/$1.1.fastq $TmpDir/$1.2.fastq > $TmpDir/$1.fastq
 
  	rm -f $TmpDir/$1.1.fastq
  	rm -f $TmpDir/$1.2.fastq
  fi
 
-rm -f $TmpResultsDir/$1-$TE-split.sam
+
     
 end=`wc -l $listDir/TE-information.txt | awk '{print $1}'`
 
@@ -145,7 +148,7 @@ for ((l=1; $l<=$end; l=$l+1)); do
 
     rm -f $TmpResultsDir/$1-$TE.sam
     ####extract soft-clipped reads
-    java -jar ./SamToFastq.jar INPUT=$TmpResultsDir/$1-$TE-split.sam FASTQ=$TmpResultsDir/$1-$TE-split.fastq 2>> $TmpDir/log.txt
+    java -jar $picardDir/SamToFastq.jar INPUT=$TmpResultsDir/$1-$TE-split.sam FASTQ=$TmpResultsDir/$1-$TE-split.fastq 2>> $TmpDir/log.txt
     rm -f $TmpResultsDir/$1-$TE-split.sam
 
     ###Estimating max read size (If necessary)
@@ -154,7 +157,7 @@ for ((l=1; $l<=$end; l=$l+1)); do
      then
       LENGTH=`awk 'NR%4 == 2 {print length($0)}' $TmpResultsDir/$1-$TE-split.fastq | sort | tail -1 `  
       length=$(($LENGTH-20))
-      echo "Maximum Read legth: $LENGTH [Stimated] "
+      echo "Maximum Read legth: $LENGTH [Estimated] "
       else
       length=$(($LENGTH-20))
       echo "Maximum Read legth: $LENGTH [User defined] "
@@ -204,7 +207,7 @@ for ((l=1; $l<=$end; l=$l+1)); do
       previous=$(($i-1));
 
       $Bowtie2Dir/bowtie2 -x $GenomeIndexFile -U $TmpResultsDir/$1-$TE-split-5-$previous -S $TmpResultsDir/$1-$TE-splitjunction-5-$i.sam --un $TmpResultsDir/$1-$TE-split-5-$i --quiet -5 $i --mp 13 --rdg 8,5 --rfg 8,5 --very-sensitive --threads $CORES 2>> $TmpDir/log.txt
-      $samtoolsDir/samtools view -q 5 -Sbu $TmpResultsDir/$1-$TE-splitjunction-5-$i.sam | samtools $samtoolsDir/sort - $TmpResultsDir/$1-$TE-splitjunction-5-$i 2>> $TmpDir/log.txt
+      $samtoolsDir/samtools view -q 5 -Sbu $TmpResultsDir/$1-$TE-splitjunction-5-$i.sam | $samtoolsDir/samtools sort - $TmpResultsDir/$1-$TE-splitjunction-5-$i 2>> $TmpDir/log.txt
       rm -f $TmpResultsDir/$1-$TE-splitjunction-5-$i.sam
       rm -f $TmpResultsDir/$1-$TE-split-5-$previous
     done
@@ -229,10 +232,10 @@ for ((l=1; $l<=$end; l=$l+1)); do
     # merge reads that were cliped at the 3' and mapped in the - strand with those clipped at the 5' and mapped on the + strand
     
       echo "Searching for reads clusters..."
-    $samtoolsDir/samtools view -F 16 -bh $TmpResultsDir/$1-$TE-split-5.bam > $TmpResultsDir/$1-$TE-split-5+.bam 2>> $TmpDir/log.txt
-    $samtoolsDir/samtools view -f 16 -bh $TmpResultsDir/$1-$TE-split-5.bam > $TmpResultsDir/$1-$TE-split-5-.bam 2>> $TmpDir/log.txt
-    $samtoolsDir/samtools view -F 16 -bh $TmpResultsDir/$1-$TE-split-3.bam > $TmpResultsDir/$1-$TE-split-3+.bam 2>> $TmpDir/log.txt
-    $samtoolsDir/samtools view -f 16 -bh $TmpResultsDir/$1-$TE-split-3.bam > $TmpResultsDir/$1-$TE-split-3-.bam 2>> $TmpDir/log.txt
+    $samtoolsDir/samtools view -q 5 -F 16 -bh $TmpResultsDir/$1-$TE-split-5.bam > $TmpResultsDir/$1-$TE-split-5+.bam 2>> $TmpDir/log.txt
+    $samtoolsDir/samtools view -q 5 -f 16 -bh $TmpResultsDir/$1-$TE-split-5.bam > $TmpResultsDir/$1-$TE-split-5-.bam 2>> $TmpDir/log.txt
+    $samtoolsDir/samtools view -q 5 -F 16 -bh $TmpResultsDir/$1-$TE-split-3.bam > $TmpResultsDir/$1-$TE-split-3+.bam 2>> $TmpDir/log.txt
+    $samtoolsDir/samtools view -q 5 -f 16 -bh $TmpResultsDir/$1-$TE-split-3.bam > $TmpResultsDir/$1-$TE-split-3-.bam 2>> $TmpDir/log.txt
 
     
     #Merge the 5' and 3' clusters to create the downstream and upstream cluster
@@ -245,8 +248,8 @@ for ((l=1; $l<=$end; l=$l+1)); do
     $samtoolsDir/samtools depth $TmpResultsDir/$1-$TE-down.bam | awk -v m=$READS M=$maxcov '$3>=(m) && $3<(M) {print $1 "\t" $2 "\t"$2"\t"$3}' > $TmpResultsDir/$1-$TE-down.bed 2>> $TmpDir/log.txt
 
     #merge cluster of covered regions - filter out clusters that are longer than read-length
-    $samtoolsDir/sort -k 1,1 -k2,2n $TmpResultsDir/$1-$TE-up.bed | $bedtoolsdir/mergeBed -i stdin | awk -v L=$length '$3-$2<L {print $0}' > $TmpResultsDir/$1-$TE-up-merge-temp.bed
-    $samtoolsDir/sort -k 1,1 -k2,2n $TmpResultsDir/$1-$TE-down.bed | $bedtoolsdir/mergeBed -i stdin | awk -v L=$length '$3-$2<L {print $0}' > $TmpResultsDir/$1-$TE-down-merge-temp.bed
+    sort -k 1,1 -k2,2n $TmpResultsDir/$1-$TE-up.bed | $bedtoolsdir/mergeBed -i stdin | awk -v L=$length '$3-$2<L {print $0}' > $TmpResultsDir/$1-$TE-up-merge-temp.bed
+    sort -k 1,1 -k2,2n $TmpResultsDir/$1-$TE-down.bed | $bedtoolsdir/mergeBed -i stdin | awk -v L=$length '$3-$2<L {print $0}' > $TmpResultsDir/$1-$TE-down-merge-temp.bed
     
     #recover max coverage information over clusters 
     $bedtoolsdir/intersectBed -a $TmpResultsDir/$1-$TE-up-merge-temp.bed -b $TmpResultsDir/$1-$TE-up.bed -wo | sort -k 1,1 -k2,2n | $bedtoolsdir/bedtools groupBy -c 7 -o max > $TmpResultsDir/$1-$TE-up-merge.bed
