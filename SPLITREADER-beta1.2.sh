@@ -11,7 +11,7 @@
 ##Questions or comments to quadrana(ar)biologie.ens.fr
 
 #$1 -> basename of the bam file (i.e. if the file is "sequencing.bam", you should enter only "sequencing")
-
+in=$1
 #TE-> should be indicated in the first column of the TE-information.txt file located in listDir
 #TSD -> should be indicated in the second column of the TE-information.txt file located in listDir
 
