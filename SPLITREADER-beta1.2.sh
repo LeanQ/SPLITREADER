@@ -47,10 +47,10 @@ OutputDir=./
 listDir=./
 
 #Folder containing the Bowtie2 index for each TE sequence
-SequencesDir=/groups/a2e/Leandro/split-analysis/accessions/TE_sequence
+SequencesDir=./
 
 #Bowtie2 index for reference genome
-GenomeIndexFile=/groups/a2e/TAIR9/bowtie_Genome/bowtie2index/TAIR10index
+GenomeIndexFile=./
 
 #Coordinates of inner pericentromeres 
 #Cent=./centromeres.bed
