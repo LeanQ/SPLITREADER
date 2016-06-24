@@ -110,8 +110,8 @@ for ((l=1; $l<=$end; l=$l+1)); do
    echo "##### RUNNING SPLIT-READ ANALYSIS ON $TE ######"    
    echo ""
   ############# 
-   TE=ATCOPIA78
-   TSD=5
+   
+   
    
    # Selecting split-reads by mapping the unmapped reads over TE extremities
    
