@@ -40,17 +40,17 @@ CORES=2
 
 # Path to configure (by default it is the current directory)
 
-InputDir=./
-OutputDir=./
+InputDir=.
+OutputDir=.
 
 #list of TEs to analyze
-listDir=./
+listDir=.
 
 #Folder containing the Bowtie2 index for each TE sequence
-SequencesDir=./
+SequencesDir=.
 
 #Bowtie2 index for reference genome
-GenomeIndexFile=./
+GenomeIndexFile=.
 
 #Coordinates of inner pericentromeres 
 #Cent=./centromeres.bed
