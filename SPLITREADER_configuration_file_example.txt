@@ -23,7 +23,7 @@ LENGTH=100
 ## Set the minimum number of split-reads in each extrimity of the TE. (default =5 ). This value should be at least 3, if not, it is forced to be 3
 READS=3
 
-## ??
+## Set minimun cluster coverage 
 maxcov=60
 
 #### BEGLONGS IN README: If not specified, the program calculate it. To this end, the program calculates the minimum number of reads as 3 standard deviation under the mean whole genome coverage
@@ -35,8 +35,8 @@ CORES=2
 ## Folder containing the Bowtie2 index for each TE sequence
 SequencesDir=./Test_data/TEs_indexes
 
-## Bowtie2 index for reference genome
-GenomeIndexFile=/projects/genomes/Arabidopsis_thaliana/TAIR10/Bowtie2_indexes/TAIR10
+## Path to Bowtie2 indexes for reference genome (prefix)
+GenomeIndexFile=/path/to/Bowtie2_indexes/TAIR10
 
 
 ## Bowtie2 executable path
@@ -49,6 +49,6 @@ samtoolsDir=/usr/local/bin
 bedtoolsdir=/usr/local/bin
 
 ## picard tools executable path
-picardDir=/groups/a2e/Leandro/scripts/picard-tools-1.99
+picardDir=/path/to/picard-tools
 
 
