@@ -355,4 +355,5 @@ echo -e "\n"
 
 done
 
+mv $TmpDir/log.txt $OutputDir
 rm -r -f $TmpDir
