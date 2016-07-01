@@ -1,0 +1,2 @@
+SPLITREADER-beta1.2.sh: line 140: /usr/local/bin/samtools: No such file or directory
+Error: Unable to access jarfile /groups/a2e/Leandro/scripts/picard-tools-1.99/SamToFastq.jar
