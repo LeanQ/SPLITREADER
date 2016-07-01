@@ -10,70 +10,134 @@
 
 ##Questions or comments to quadrana(ar)biologie.ens.fr
 
-#$1 ->  bam file (we'll take care of the rest)
-# $1 Could be  path to a bam file. Extract the in name (ex. /path/to/name.bam --> extract 
-in=$1
-#in=test_data/test.bam
-tmp=`basename $in`
-BAMname=${tmp%.bam}
+############### USAGE/HELP
+display_usage() { 
+        echo -e "\nSPLITREADER: Split-read pipeline for the identification of non-reference TE insertions with TSDs — .\n"
+        echo -e "Usage: bash SPLITREADER-beta1.2.sh -c SPLITREADER_configuration_file_example.txt\n" 
+        echo 
+		echo "Contact:quadrana(ar)biologie.ens.fr"
+		echo
+} 
 
-#TE-> should be indicated in the first column of the TE-information.txt file located in listDir
-#TSD -> should be indicated in the second column of the TE-information.txt file located in listDir
-
-
-#############################################################
-#IN THE FOLLOWING VARIABLE YOU CAN PROVIDE THE MINIMUM READ LEGTH. By default this is 100nt
-LENGTH=100
-
-#### If not specified, the program will calculate the longest read
+# if less than two arguments supplied, display usage 
+if [  $# -eq 0 ] ; then  display_usage; exit 1; fi 
+# check whether user had supplied -h or --help . If yes display usage 
+if [[ ( $1 == "--help") ||  $1 == "-h" ]]; then display_usage; exit 0; fi 
 
 
-#############################################################
-#IN THE FOLLOWING VARIABLE YOU CAN PROVIDE THE MINIMUM NUMBER OF SPLIT-READS IN EACH EXTRIMITY OF THE TE. By default is 5 reads
-READS=3
-maxcov=60
-#### If not specified, the program calculate it. To this end, the program calculates the minimum number of reads as 3 standard deviation under the mean whole genome coverage
-####This value should be at least 3, if not, it is forced to be 3
- 
-#############################################################
+while getopts "c:" opt
+do
 
-#############################################################
-#IN THE FOLLOWING VARIABLE YOU CAN EXPLICITE THE NUMBER OF THREADS YOU WANT TO USE FOR MAPPING. By default is 2 threads
-CORES=2
-#############################################################
+case $opt in
 
+c) CONFIG_FILE=$OPTARG ;;
+?) echo "Unknown option -$OPTARG ";;
 
-# Path to configure (by default it is the current directory)
+esac
+done
+#CONFIG_FILE=$1
+#CONFIG_FILE=SPLITREADER_configuration_file_example.txt
+if [[ ! -s $CONFIG_FILE ]]; then >&2 echo -e "[ERROR]: Empty/non-existing parameter file or parameter file not correctly provided (use -c option)."; exit 1; fi
 
 
-OutputDir=. # this notation "./" usually causes errors. Ex: OutputDir/file.out --> .//file.out no such file or directory!
 
-#list of TEs to analyze
-listDir=./TE_list
 
-#Folder containing the Bowtie2 index for each TE sequence
-SequencesDir=./TEs_indexes
+########################### Parsing conig file
+grep -v "#" $CONFIG_FILE | awk '/./' > tmp.conf
 
-#Bowtie2 index for reference genome
-GenomeIndexFile=/projects/genomes/Arabidopsis_thaliana/TAIR10/Bowtie2_indexes/TAIR10
+typeset -A config # init array
+config=( # set default values in config array
+[OutputDir]=""
+[Tmp]=""
+[in]=""
+[listTE]=""
+[LENGTH]=""
+[READS]=""
+[maxcov]=""
+[CORES]=""
+[SequencesDir]=""
+[GenomeIndexFile]=""
+[Bowtie2Dir]=""
+[samtoolsDir]=""
+[bedtoolsdir]=""
+[picardDir]=""
+)
 
-#Coordinates of inner pericentromeres 
-#Cent=./centromeres.bed
+while read line
+do
+    if echo $line | grep -F = &>/dev/null
+    then
+        varname=$(echo "$line" | cut -d '=' -f 1)
+        config[$varname]=$(echo "$line" | cut -d '=' -f 2-)
+    fi
+done < tmp.conf
 
-#Bowtie2 executable path
-Bowtie2Dir=/usr/local/bin
-#samtools executable path
-samtoolsDir=/usr/local/bin/
-#bedtools executable path
-bedtoolsdir=/usr/local/bin
-#picard tools executable path
-picardDir=/groups/a2e/Leandro/scripts/picard-tools-1.99
 
+OutputDir=${config[OutputDir]}
+Tmp=${config[Tmp]}
+in=${config[in]}
+listTE=${config[listTE]}
+LENGTH=${config[LENGTH]}
+READS=${config[READS]}
+maxcov=${config[maxcov]}
+CORES=${config[CORES]}
+SequencesDir=${config[SequencesDir]}
+GenomeIndexFile=${config[GenomeIndexFile]}
+Bowtie2Dir=${config[Bowtie2Dir]}
+samtoolsDir=${config[samtoolsDir]}
+bedtoolsdir=${config[bedtoolsdir]}
+picardDir=${config[picardDir]}
+############################ END parsing config file
+
+
+cat > tmp.conf <<EOL
+
+###########################
+SPLITREADER RUN PARAMETERS
+###########################
+
+Working directories:
+===================
+Output dir: $OutputDir
+Temporary directory: $Tmp
+
+Inputs and main parameters:
+==========================
+Input BAM file: $in
+List of TEs: $listTE
+
+Read length (bp): $LENGTH
+Maximum coverage: $maxcov
+Number of threads: $CORES
+
+Indexes:
+========
+Bowtie2 index (reference genome): $GenomeIndexFile
+Directory of Bowtie2 indexes for each TE: $SequencesDir
+
+Tools:
+======
+Path to Bowtie2: $Bowtie2Dir
+Path to Samtools: $samtoolsDir
+Path to Bedtools: $bedtoolsdir
+Path to Picard tools: $picardDir
+
+###############################
+END SPLITREADER RUN PARAMETERS
+###############################
+EOL
+
+cat tmp.conf
+rm -f tmp.conf
+echo 
+echo
+
+########################################################## MAIN ############################################################################################
 
 # PID of this batch
 IDPID=$$
 # Temporary directory
-TmpDir=./QD-$IDPID
+TmpDir=$Tmp/QD-$IDPID
 mkdir -p $TmpDir
   
 #Extracting unmapped reads
@@ -97,12 +161,11 @@ rm -f $TmpDir/$BAMname.2.fastq
 fi
 
 
-    
-#end=`wc -l $listDir/TE-information.txt | awk '{print $1}'`
+#end=`wc -l $listTE | awk '{print $1}'`
 
 ##############
 #Starting the SPLITREADER pipeline for each TE in the TE-indormation.txt file
-cat $listDir/TE-information.txt | while read line ; do
+cat $listTE | while read line ; do
     STARTTIME=$(date +%s)
 
     IDPID2=$PPID
