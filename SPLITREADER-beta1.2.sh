@@ -98,19 +98,19 @@ fi
 
 
     
-end=`wc -l $listDir/TE-information.txt | awk '{print $1}'`
+#end=`wc -l $listDir/TE-information.txt | awk '{print $1}'`
 
 ##############
 #Starting the SPLITREADER pipeline for each TE in the TE-indormation.txt file
-for ((l=1; $l<=$end; l=$l+1)); do
+cat $listDir/TE-information.txt | while read line ; do
     STARTTIME=$(date +%s)
 
     IDPID2=$PPID
     TmpResultsDir=$TmpDir/results-$IDPID2
     mkdir -p $TmpResultsDir
 
-    TE=`sed -n "${l}p" $listDir/TE-information.txt | awk '{print $1}'`
-    TSD=`sed -n "${l}p" $listDir/TE-information.txt | awk '{print $2}'`
+    TE=`echo $line| awk '{print $1}'`
+    TSD=`echo $line| awk '{print $2}'`
    
    echo "##### RUNNING SPLIT-READ ANALYSIS ON $TE ######"    
    echo ""
