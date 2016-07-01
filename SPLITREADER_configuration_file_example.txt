@@ -11,7 +11,7 @@ OutputDir=.
 Tmp=.
 
 ## Path to input bam file:
-in=./Test_data/test_bam/test.bam
+in=./Test_data/Test_BAM/test.bam
 
 ## list of TEs to analyze
 listTE=./Test_data/TE_list/TE-information.txt
