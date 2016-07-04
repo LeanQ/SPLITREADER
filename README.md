@@ -36,7 +36,7 @@ SPLITREADER pipeline consists in four steps:
 
 1- Extraction of reads not mapping to the reference genome (using SAM flag 4) 
 
-2- Forced mapping to a collection of 5’ and 3’ TE sequence extremities (300bp) obtained from the reference genome (using the module TEXTRACTION). SPLITREADER then identify all reads with one end (≥20nt) mapping to a TE extremity (by locating reads where the CIGAR string starting or ending with ‘S’ characterwith a value equal or greater to 20)
+2- Forced mapping to a collection of reference TE sequences (constructed using prepare_TEs.sh as indicated in (#prepare-tes) section). SPLITREADER then identify all reads with one end (≥20nt) mapping to a TE extremity (by locating reads where the CIGAR string starting or ending with ‘S’ characterwith a value equal or greater to 20)
 
 3- Reads are then recursively soft clipped by 1nt from one end and mapped to the reference genome using Bowtie2 until the soft-clipped read length reached 20nt.
 
@@ -55,7 +55,7 @@ This pipeline requieres as an input:
 	- TE_ID
 	- TSD
 
-*NOTE: Better performance is obtained if the expected size for the TSDs are provided. If no TSD is provided, it will be set to 5.*
+*NOTE: Better performance is obtained if the expected size for the TSDs are provided. If no TSD is provided, it will be set to 3.*
 
 ##Usage
 
@@ -79,7 +79,14 @@ Once the TEs are indexed, one can edit the configuration file and procceed with 
 
 ##Output
 
-SPLITREADER outputs the location of the detected non-reference TE insertions and a BAM file for visualisation purposes.
+SPLITREADER outputs the location of the detected non-reference TE insertions and a BAM file for visualisation purposes. The output file have the following format: 
+
+	- Chromosome name
+	- Insertion start
+	- Insertion end
+	- Reconstructed TSD size
+	- # Reads supporting the 5'end of the TE insertion 
+	- # Reads supporting the 3'end of the TE insertion 
 
 ##Cite
 
