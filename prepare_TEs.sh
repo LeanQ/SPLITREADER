@@ -9,9 +9,9 @@
 
 display_usage() { 
         echo -e "\nprepare_TEs.sh: Preparation of TEs sequences and indexes.\n"
-        echo -e "Usage: bash prepare_TEs.sh -i TE_coordiantes.bed -g Genome.fa -d directory of existing TE indexed provided by SPLITREADER -p /path/to/bowtie2-build\n" 
+        echo -e "Usage: bash prepare_TEs.sh -i <TE_coordiantes.bed> -g <Genome.fa> -d <directory of existing TE indexed provided by SPLITREADER> -p </path/to/bowtie2-build>\n" 
         echo 
-		echo -e "Example command: bash prepare_TEs.sh -i Test_data/TE_coordiantes.bed -g Genome.fa -d TAIR10_TE_indexes -p /usr/local/bin/bowtie2-build"
+		echo -e "Example command: bash prepare_TEs.sh -i Test_data/TE_list/test_TE_coordinates.bed -g Genome.fa -d Test_data/TE_indexes -p /usr/local/bin/bowtie2-build"
 		echo "Contact:quadrana(ar)biologie.ens.fr"
 		echo
 } 
@@ -42,6 +42,12 @@ done
 a=`grep -v "#" $TEs| awk '/./' |wc -l`
 b=`grep -v "#" $TEs | awk '/./ && NF==5 {print}'|wc -l`
 if [ $a != $b ]; then >&2 echo "[ERROR]: $TEs file is not formated correctly. Number of columns must be 5." ; exit 1; fi
+# if dir indexes dos not exists
+if [ ! -d $INDEXES ]; then  >&2 echo "[ERROR]:`file $INDEXES`" ; exit 1; fi
+# remove tailing \ if present
+INDEXES=`echo "$INDEXES" | sed 's|/| |g'`
+##### END tests
+
 
 #create tmp file to store .fa files
 if [ ! -d TMP_FA ]; then mkdir TMP_FA; fi
