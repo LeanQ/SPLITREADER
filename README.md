@@ -93,7 +93,7 @@ SPLITREADER outputs the location of the detected non-reference TE insertions and
 If you use this software, please cite:
 
 The Arabidopsis thaliana mobilome and its impact at the species level. Quadrana L, Bortolini Silveira A, Mayhew GF, LeBlanc C, Martienssen RA, Jeddeloh JA, Colot V. 
-Elife. 2016 Jun 3;5. pii: e15716. doi: 10.7554/eLife.15716. PubMed PMID: 27258693.
+Elife. 2016 Jun 3;5. pii: e15716. doi: 10.7554/eLife.15716. PubMed PMID: 27258693. (https://elifesciences.org/content/5/e15716)
 
 
 
