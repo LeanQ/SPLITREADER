@@ -177,8 +177,8 @@ cat TE_names.txt | while read line ; do
 
     TE=`echo $line| awk '{print $1}'`
     TSD=`echo $line| awk '{print $2}'`
-	#set TSD to 5 if no TSD is provided		
-	if [ -z "$TSD" ]; then $YSD=5 ; fi
+	#set TSD to 3 if no TSD is provided		
+	if [ -z "$TSD" ]; then $TSD=3 ; fi
    
    echo "##### RUNNING SPLIT-READ ANALYSIS ON $TE ######"    
    echo ""
