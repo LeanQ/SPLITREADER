@@ -14,7 +14,7 @@ Tmp=.
 in=./Test_data/Test_BAM/test.bam
 
 ## list of TEs to analyze
-listTE=./Test_data/TE_list/TE-information.txt
+listTE=./Test_data/TE_list/test_TE_coordinates.bed
 
 ## Set the mininum read length (bp). If not specified, the program will calculate the longest read
 LENGTH=100
