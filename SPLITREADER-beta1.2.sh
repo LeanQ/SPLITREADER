@@ -168,15 +168,15 @@ fi
 
 ##############
 #Starting the SPLITREADER pipeline for each TE in the TE-indormation.txt file
-cat $listTE | while read line ; do
+grep -v "#" $listTE | while read line ; do
     STARTTIME=$(date +%s)
 
     IDPID2=$PPID
     TmpResultsDir=$TmpDir/results-$IDPID2
     mkdir -p $TmpResultsDir
 
-    TE=`echo $line| awk '{print $1}'`
-    TSD=`echo $line| awk '{print $2}'`
+    TE=`echo $line| awk '{print $4}'`
+    TSD=`echo $line| awk '{print $5}'`
    
    echo "##### RUNNING SPLIT-READ ANALYSIS ON $TE ######"    
    echo ""
