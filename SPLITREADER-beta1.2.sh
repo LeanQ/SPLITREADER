@@ -148,7 +148,6 @@ echo "Extracting unmapped reads from $in"
 pe=`$samtoolsDir/samtools view -c -f 1 $in | awk '{print $1}'` 
 
 $samtoolsDir/samtools view -f 4 -u $in > $TmpDir/$BAMname.bam 2>> $TmpDir/log.txt
-
 if [ -z "$pe" ]
 then
 
@@ -163,20 +162,21 @@ rm -f $TmpDir/$BAMname.1.fastq
 rm -f $TmpDir/$BAMname.2.fastq
 fi
 
-
 #end=`wc -l $listTE | awk '{print $1}'`
 
 ##############
 #Starting the SPLITREADER pipeline for each TE in the TE-indormation.txt file
-grep -v "#" $listTE | while read line ; do
+grep -v "#" $listTE| awk '/./' | cut -f 4,5 | sort -u > TE_names.txt
+cat TE_names.txt
+cat TE_names.txt | while read line ; do
     STARTTIME=$(date +%s)
 
     IDPID2=$PPID
     TmpResultsDir=$TmpDir/results-$IDPID2
     mkdir -p $TmpResultsDir
 
-    TE=`echo $line| awk '{print $4}'`
-    TSD=`echo $line| awk '{print $5}'`
+    TE=`echo $line| awk '{print $1}'`
+    TSD=`echo $line| awk '{print $2}'`
    
    echo "##### RUNNING SPLIT-READ ANALYSIS ON $TE ######"    
    echo ""
@@ -223,7 +223,7 @@ grep -v "#" $listTE | while read line ; do
     
       
    echo "Mapping 5' split-reads on reference genome"
-   echo "Progresssion: ["
+   echo -n "Progresssion:["
   
   $Bowtie2Dir/bowtie2 -x $GenomeIndexFile -U $TmpResultsDir/$BAMname-$TE-split.fastq -S $TmpResultsDir/$BAMname-$TE-local.sam --local --very-sensitive --threads $CORES --quiet 2>> $TmpDir/log.txt
    
