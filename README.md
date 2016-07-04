@@ -36,7 +36,7 @@ SPLITREADER pipeline consists in four steps:
 
 1- Extraction of reads not mapping to the reference genome (using SAM flag 4) 
 
-2- Forced mapping to a collection of reference TE sequences (constructed using prepare_TEs.sh as indicated [Prepare TEs](#prepare-tes) below). SPLITREADER then identify all reads with one end (≥20nt) mapping to a TE extremity (by locating reads where the CIGAR string starting or ending with ‘S’ characterwith a value equal or greater to 20)
+2- Forced mapping to a collection of reference TE sequences (constructed using prepare_TEs.sh as indicated in [prepare TEs](#prepare-tes) section). SPLITREADER then identify all reads with one end (≥20nt) mapping to a TE extremity (by locating reads where the CIGAR string starting or ending with ‘S’ characterwith a value equal or greater to 20)
 
 3- Reads are then recursively soft clipped by 1nt from one end and mapped to the reference genome using Bowtie2 until the soft-clipped read length reached 20nt.
 
