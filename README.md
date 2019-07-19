@@ -105,26 +105,26 @@ TAIR10.rev.1.bt2
 TAIR10.rev.2.bt2
 ```
 
-Edit the configuration file with the correct path to the dependecies `SPLITREADER_configuration_file_example.txt`.
+Edit the configuration file with the correct path to the dependencies `SPLITREADER_configuration_file_example.txt`.
 
 ### Prepare TEs
 
 Before runing TE detection, one must create a Bowtie2 index for each input TE. 
 
 ```
-bash prepare_TEs.sh -i <Input TE coordiantes described above> \
-					-g <Genome.fa> \
-					-d <directory used to store created TE indexes. If it contains a collection of indexed TE, the script will check if the index already exists> \
-					-p </path/to/bowtie2-build> 
+bash prepare_TEs.sh -i <Input TE coordiantes described above>
+	-g <Genome.fa>
+	-d <directory used to store created TE indexes. If it contains a collection of indexed TE, the script will check if the index already exists>
+	-p </path/to/bowtie2-build> 
 ```
 
-In our example, it will be
+In our example, it will be:
 
 ```
 bash prepare_TEs.sh -i ./Test_data/TE_list/test_TE_coordinates.bed \
-					-g ./TAIR10.fa \
-					-d ./Test_data/TE_indexes  \
-					-p /path/to/bowtie2-build
+	-g ./TAIR10.fa \
+	-d ./Test_data/TE_indexes  \
+	-p /path/to/bowtie2-build
 ```
 
 ### Detect TE insertions
@@ -145,7 +145,7 @@ SPLITREADER outputs the location of the detected non-reference TE insertions and
 	- # Reads supporting the 5'end of the TE insertion 
 	- # Reads supporting the 3'end of the TE insertion 
 
-For our example output, the expected output files are
+For our example output, the expected output files are:
 
 ```
 test-TE1-insertion-sites.bed
