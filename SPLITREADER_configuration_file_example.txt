@@ -1,9 +1,6 @@
 ### EXAMPLE CONFIGURATION FI FOR RUNING SPLITREADER PIPELINE ###
 ### SEE readme.txt for details ###
 
-
-
-
 # Path to output direcoty
 OutputDir=. 
 
@@ -28,27 +25,27 @@ maxcov=60
 
 #### BEGLONGS IN README: If not specified, the program calculate it. To this end, the program calculates the minimum number of reads as 3 standard deviation under the mean whole genome coverage
 
-#Number of threads for mappin
+#Number of threads for mapping
 CORES=2
-
 
 ## Folder containing the Bowtie2 index for each TE sequence
 SequencesDir=./Test_data/TEs_indexes
 
 ## Path to Bowtie2 indexes for reference genome (prefix)
+## For instance if the first index file is /path/to/Bowtie2_indexes/TAIR10.1.bt2
+## The following GenomeIndexFile is needed:
 GenomeIndexFile=/path/to/Bowtie2_indexes/TAIR10
 
-
-## Bowtie2 executable path
+## Bowtie2 executable path (no final slash)
 Bowtie2Dir=/usr/local/bin
 
-## samtools executable path
+## samtools executable path (no final slash)
 samtoolsDir=/usr/local/bin
 
-## bedtools executable path
+## bedtools executable path (no final slash)
 bedtoolsdir=/usr/local/bin
 
-## picard tools executable path
-picardDir=/path/to/picard-tools
+## Path to executable picard.jar file (no final slash)
+picardDir=/path/to/picard/executable
 
 
