@@ -165,8 +165,8 @@ else
 	# Concatenate the 2 mates of each unmapped read
 	cat $TmpDir/$BAMname.1.fastq $TmpDir/$BAMname.2.fastq > $TmpDir/$BAMname.fastq
 
-	# rm -f $TmpDir/$BAMname.1.fastq
-	# rm -f $TmpDir/$BAMname.2.fastq
+	rm -f $TmpDir/$BAMname.1.fastq
+	rm -f $TmpDir/$BAMname.2.fastq
 fi
 
 
@@ -227,7 +227,7 @@ cat TE_names.txt | while read line ; do
 
     ################################
    
-    # rm -f $TmpResultsDir/$BAMname-$TE-split.sam
+    rm -f $TmpResultsDir/$BAMname-$TE-split.sam
 
 
 	echo -e "\n##### Estimating max read size ######\n" 
@@ -250,7 +250,7 @@ cat TE_names.txt | while read line ; do
 	echo -e "\n##### Recursive split-reads mapping ######\n" 
 	
 	echo -e "\nMapping 5' split-reads on reference genome\n"
-	echo -n "Progresssion:["
+	echo -n "Progression:["
   
 	echo $TmpResultsDir/$BAMname-$TE-split.fastq
 
@@ -276,13 +276,10 @@ cat TE_names.txt | while read line ; do
 	$samtoolsDir/samtools view -Sbu -q 5 $TmpResultsDir/$BAMname-$TE-split-local-up.sam | \
 	  $samtoolsDir/samtools sort - -o $TmpResultsDir/$BAMname-$TE-split-local-up.bam 2>> $TmpDir/log.txt
 
-	# Uncommented lines	
-	# rm -f $TmpResultsDir/$BAMname-$TE-split-local-up.sam
-	# rm -f $TmpResultsDir/$BAMname-$TE-split-local-down.sam
-	# rm -f $TmpResultsDir/$BAMname-$TE-local.sam
+	rm -f $TmpResultsDir/$BAMname-$TE-split-local-up.sam
+	rm -f $TmpResultsDir/$BAMname-$TE-split-local-down.sam
+	rm -f $TmpResultsDir/$BAMname-$TE-local.sam
 	  
-	echo -e "\n##### Check point 1 ######\n"   
-   
    ############################################
    
    length=$(($((LENGTH/2))-1))
@@ -294,23 +291,22 @@ cat TE_names.txt | while read line ; do
 	# Add output argument -o
 	$samtoolsDir/samtools view -Sbu -F 4  $TmpResultsDir/$BAMname-$TE-splitjunction-5-$length.sam | \
 		$samtoolsDir/samtools sort - -o $TmpResultsDir/$BAMname-$TE-splitjunction-5-$length.bam
-	# rm -f $TmpResultsDir/$BAMname-$TE-splitjunction-5-$length.sam
+	rm -f $TmpResultsDir/$BAMname-$TE-splitjunction-5-$length.sam
      
     for ((i=$((length+1)); $i<$((LENGTH-18)); i=$i+1)); do
-    echo -n "|" 
-      previous=$(($i-1));
+		echo -n "|" 
+		previous=$(($i-1));
 
-      $Bowtie2Dir/bowtie2 -x $GenomeIndexFile -U $TmpResultsDir/$BAMname-$TE-split-5-$previous -S $TmpResultsDir/$BAMname-$TE-splitjunction-5-$i.sam --un $TmpResultsDir/$BAMname-$TE-split-5-$i -5 $i --mp 13 --rdg 8,5 --rfg 8,5 --very-sensitive --quiet 2>> $TmpDir/log.txt
-      $samtoolsDir/samtools view -Sbu -F 4 $TmpResultsDir/$BAMname-$TE-splitjunction-5-$i.sam | $samtoolsDir/samtools sort - -o $TmpResultsDir/$BAMname-$TE-splitjunction-5-$i.bam 2>> $TmpDir/log.txt
-      # rm -f $TmpResultsDir/$BAMname-$TE-splitjunction-5-$i.sam
-      # rm -f $TmpResultsDir/$BAMname-$TE-split-5-$previous
+		$Bowtie2Dir/bowtie2 -x $GenomeIndexFile -U $TmpResultsDir/$BAMname-$TE-split-5-$previous -S $TmpResultsDir/$BAMname-$TE-splitjunction-5-$i.sam --un $TmpResultsDir/$BAMname-$TE-split-5-$i -5 $i --mp 13 --rdg 8,5 --rfg 8,5 --very-sensitive --quiet 2>> $TmpDir/log.txt
+		$samtoolsDir/samtools view -Sbu -F 4 $TmpResultsDir/$BAMname-$TE-splitjunction-5-$i.sam | $samtoolsDir/samtools sort - -o $TmpResultsDir/$BAMname-$TE-splitjunction-5-$i.bam 2>> $TmpDir/log.txt
+		
+		rm -f $TmpResultsDir/$BAMname-$TE-splitjunction-5-$i.sam
+		rm -f $TmpResultsDir/$BAMname-$TE-split-5-$previous
     done
-	echo -e "\n##### Check point 2 ######\n" 
     
-  $Bowtie2Dir/bowtie2 -x $GenomeIndexFile -U $TmpResultsDir/$BAMname-$TE-split.fastq -S $TmpResultsDir/$BAMname-$TE-splitjunction-3-$length.sam --un $TmpResultsDir/$BAMname-$TE-split-3-$length -3 $length --mp 13 --rdg 8,5 --rfg 8,5 --very-sensitive --quiet 2>> $TmpDir/log.txt
-  # Line commented out before
-  $samtoolsDir/samtools view -Sbu -F 4  $TmpResultsDir/$BAMname-$TE-splitjunction-3-$length.sam | $samtoolsDir/samtools sort - -o $TmpResultsDir/$BAMname-$TE-splitjunction-3-$length.bam
- #   rm -f $TmpResultsDir/$BAMname-$TE-splitjunction-3-$length.sam
+	$Bowtie2Dir/bowtie2 -x $GenomeIndexFile -U $TmpResultsDir/$BAMname-$TE-split.fastq -S $TmpResultsDir/$BAMname-$TE-splitjunction-3-$length.sam --un $TmpResultsDir/$BAMname-$TE-split-3-$length -3 $length --mp 13 --rdg 8,5 --rfg 8,5 --very-sensitive --quiet 2>> $TmpDir/log.txt
+	$samtoolsDir/samtools view -Sbu -F 4  $TmpResultsDir/$BAMname-$TE-splitjunction-3-$length.sam | $samtoolsDir/samtools sort - -o $TmpResultsDir/$BAMname-$TE-splitjunction-3-$length.bam
+	rm -f $TmpResultsDir/$BAMname-$TE-splitjunction-3-$length.sam
      
     for ((i=$((length+1)); $i<$((LENGTH-18)); i=$i+1)); do
 		echo -n "|" 
@@ -318,20 +314,18 @@ cat TE_names.txt | while read line ; do
 
 		$Bowtie2Dir/bowtie2 -x $GenomeIndexFile -U $TmpResultsDir/$BAMname-$TE-split-3-$previous -S $TmpResultsDir/$BAMname-$TE-splitjunction-3-$i.sam --un $TmpResultsDir/$BAMname-$TE-split-3-$i -3 $i --mp 13 --rdg 8,5 --rfg 8,5 --very-sensitive --quiet 2>> $TmpDir/log.txt
 		$samtoolsDir/samtools view -Sbu -F 4 $TmpResultsDir/$BAMname-$TE-splitjunction-3-$i.sam | $samtoolsDir/samtools sort - -o $TmpResultsDir/$BAMname-$TE-splitjunction-3-$i.bam 2>> $TmpDir/log.txt
-		# rm -f $TmpResultsDir/$BAMname-$TE-splitjunction-3-$i.sam
-		# rm -f $TmpResultsDir/$BAMname-$TE-split-3-$previous
+		rm -f $TmpResultsDir/$BAMname-$TE-splitjunction-3-$i.sam
+		rm -f $TmpResultsDir/$BAMname-$TE-split-3-$previous
 	done
 	
 	echo -n "]"
 	echo -e "\n"
 
-	echo -e "\n##### Check point 3 ######\n" 
-
     # Post-treatment:
     
     # merge all the recursive mappings from either the 3' and 5'
         
-    #rm -f $TmpResultsDir/$BAMname-$TE-split.fastq
+	rm -f $TmpResultsDir/$BAMname-$TE-split.fastq
 
     # Merging and sorting bam files
     $samtoolsDir/samtools merge -f -u $TmpResultsDir/$BAMname-$TE-split-5.bam $TmpResultsDir/$BAMname-$TE-splitjunction-5-*.bam 2>> $TmpDir/log.txt
@@ -339,7 +333,7 @@ cat TE_names.txt | while read line ; do
     $samtoolsDir/samtools sort $TmpResultsDir/$BAMname-$TE-split-5.bam -o $TmpResultsDir/$BAMname-$TE-split-5.bam 2>> $TmpDir/log.txt
     $samtoolsDir/samtools sort $TmpResultsDir/$BAMname-$TE-split-3.bam -o $TmpResultsDir/$BAMname-$TE-split-3.bam 2>> $TmpDir/log.txt
     
-   # rm -f $TmpResultsDir/$BAMname-$TE-splitjunction-[35]-*.bam
+	rm -f $TmpResultsDir/$BAMname-$TE-splitjunction-[35]-*.bam
     
     # merge reads that were cliped at the 3' and mapped in the + strand with those clipped at the 5' and mapped on the - strand
     # merge reads that were cliped at the 3' and mapped in the - strand with those clipped at the 5' and mapped on the + strand
@@ -350,17 +344,14 @@ cat TE_names.txt | while read line ; do
     $samtoolsDir/samtools view -F 16 -bh $TmpResultsDir/$BAMname-$TE-split-3.bam > $TmpResultsDir/$BAMname-$TE-split-3+.bam 2>> $TmpDir/log.txt 2>> $TmpDir/log.txt
     $samtoolsDir/samtools view -f 16 -bh $TmpResultsDir/$BAMname-$TE-split-3.bam > $TmpResultsDir/$BAMname-$TE-split-3-.bam 2>> $TmpDir/log.txt 2>> $TmpDir/log.txt
 
-	echo -e "\n##### Check point 4 ######\n" 
-    #Merge the 5' and 3' clusters to create the downstream and upstream cluster
+	#Merge the 5' and 3' clusters to create the downstream and upstream cluster
 
-   $samtoolsDir/samtools merge -f -u $TmpResultsDir/$BAMname-$TE-up.bam $TmpResultsDir/$BAMname-$TE-split-5-.bam $TmpResultsDir/$BAMname-$TE-split-3+.bam > $TmpResultsDir/$BAMname-$TE-split-local-up.bam 2>> $TmpDir/log.txt
-   $samtoolsDir/samtools merge -f -u $TmpResultsDir/$BAMname-$TE-down.bam $TmpResultsDir/$BAMname-$TE-split-5+.bam $TmpResultsDir/$BAMname-$TE-split-3-.bam > $TmpResultsDir/$BAMname-$TE-split-local-down.bam 2>> $TmpDir/log.txt
-   samtools sort $TmpResultsDir/$BAMname-$TE-down.bam -o $TmpResultsDir/$BAMname-$TE-down.bam 2>> $TmpDir/log.txt
-   samtools sort $TmpResultsDir/$BAMname-$TE-up.bam -o $TmpResultsDir/$BAMname-$TE-up.bam 2>> $TmpDir/log.txt
-   
-	echo -e "\n##### Check point 5 ######\n" 
+	$samtoolsDir/samtools merge -f -u $TmpResultsDir/$BAMname-$TE-up.bam $TmpResultsDir/$BAMname-$TE-split-5-.bam $TmpResultsDir/$BAMname-$TE-split-3+.bam > $TmpResultsDir/$BAMname-$TE-split-local-up.bam 2>> $TmpDir/log.txt
+	$samtoolsDir/samtools merge -f -u $TmpResultsDir/$BAMname-$TE-down.bam $TmpResultsDir/$BAMname-$TE-split-5+.bam $TmpResultsDir/$BAMname-$TE-split-3-.bam > $TmpResultsDir/$BAMname-$TE-split-local-down.bam 2>> $TmpDir/log.txt
+	samtools sort $TmpResultsDir/$BAMname-$TE-down.bam -o $TmpResultsDir/$BAMname-$TE-down.bam 2>> $TmpDir/log.txt
+	samtools sort $TmpResultsDir/$BAMname-$TE-up.bam -o $TmpResultsDir/$BAMname-$TE-up.bam 2>> $TmpDir/log.txt
 
-    #Calculate the coverage over mapped regions - filter regions according to minimum and maximum read-depth
+	#Calculate the coverage over mapped regions - filter regions according to minimum and maximum read-depth
     $samtoolsDir/samtools depth $TmpResultsDir/$BAMname-$TE-up.bam | awk -v M=$maxcov '$3<(M) {print $1 "\t" $2 "\t"$2"\t"$3}' > $TmpResultsDir/$BAMname-$TE-up.bed 2>> $TmpDir/log.txt
     $samtoolsDir/samtools depth $TmpResultsDir/$BAMname-$TE-down.bam | awk -v M=$maxcov ' $3<(M) {print $1 "\t" $2 "\t"$2"\t"$3}' > $TmpResultsDir/$BAMname-$TE-down.bed 2>> $TmpDir/log.txt
 
@@ -369,34 +360,34 @@ cat TE_names.txt | while read line ; do
     sort -k 1,1 -k2,2n $TmpResultsDir/$BAMname-$TE-down.bed | $bedtoolsdir/mergeBed -i stdin -c 4 -o max  > $TmpResultsDir/$BAMname-$TE-down-merge.bed 2>> $TmpDir/log.txt
     
      
-    # rm -f $TmpResultsDir/$BAMname-$TE-down.bed
-    # rm -f $TmpResultsDir/$BAMname-$TE-up.bed
-    
-    # rm -f $TmpResultsDir/$BAMname-$TE-split-5+.bam
-    # rm -f $TmpResultsDir/$BAMname-$TE-split-5-.bam
-    # rm -f $TmpResultsDir/$BAMname-$TE-split-3+.bam
-    # rm -f $TmpResultsDir/$BAMname-$TE-split-3-.bam
+	rm -f $TmpResultsDir/$BAMname-$TE-down.bed
+	rm -f $TmpResultsDir/$BAMname-$TE-up.bed
+
+	rm -f $TmpResultsDir/$BAMname-$TE-split-5+.bam
+	rm -f $TmpResultsDir/$BAMname-$TE-split-5-.bam
+	rm -f $TmpResultsDir/$BAMname-$TE-split-3+.bam
+	rm -f $TmpResultsDir/$BAMname-$TE-split-3-.bam
   
 
     #searching for overlapping clusters meeting the expected TSD size 
-      echo "Searching overlaps and defining insertions..."
-      
-      $bedtoolsdir/intersectBed -a $TmpResultsDir/$BAMname-$TE-up-merge.bed -b $TmpResultsDir/$BAMname-$TE-down-merge.bed -wo | awk -v tsd=$TSD -v te=$TE -v rea=$READS '($6-$2)>10 && ($7-$3)>10 && $9>=tsd && ($4+$8)>=rea {print $1 "\t" $6 "\t" $3 "\t"te"\t" ($9-1)"\t"$4"\t"$8}' >> $OutputDir/$BAMname-$TE-insertion-sites.bed
-      
-      ###only if excluding inner pericentromeres and donnors TEs:
-      #awk '$1!="" {print $0}' $SequencesDir/$TE.txt > $TmpResultsDir/$TE-donnor.txt
-      #$bedtoolsdir/intersectBed -a $TmpResultsDir/$BAMname-$TE-up-merge.bed -b $TmpResultsDir/$BAMname-$TE-down-merge.bed -wo | awk -v tsd=$TSD -v te=$TE '($6-$2)>10 && ($7-$3)>10 && $9>=tsd {print $1 "\t" $6 "\t" $3 "\t"te"\t" ($9-1)"\t"$4"\t"$8}' | intersectBed -a stdin -b $TmpResultsDir/$TE-donnor.txt -v | intersectBed -a stdin -b $Cent -v >> $OutputDir/$BAMname-insertion-sites.bed
+	echo "Searching overlaps and defining insertions..."
+
+	$bedtoolsdir/intersectBed -a $TmpResultsDir/$BAMname-$TE-up-merge.bed -b $TmpResultsDir/$BAMname-$TE-down-merge.bed -wo | awk -v tsd=$TSD -v te=$TE -v rea=$READS '($6-$2)>10 && ($7-$3)>10 && $9>=tsd && ($4+$8)>=rea {print $1 "\t" $6 "\t" $3 "\t"te"\t" ($9-1)"\t"$4"\t"$8}' >> $OutputDir/$BAMname-$TE-insertion-sites.bed
+
+	###only if excluding inner pericentromeres and donnors TEs:
+	#awk '$1!="" {print $0}' $SequencesDir/$TE.txt > $TmpResultsDir/$TE-donnor.txt
+	#$bedtoolsdir/intersectBed -a $TmpResultsDir/$BAMname-$TE-up-merge.bed -b $TmpResultsDir/$BAMname-$TE-down-merge.bed -wo | awk -v tsd=$TSD -v te=$TE '($6-$2)>10 && ($7-$3)>10 && $9>=tsd {print $1 "\t" $6 "\t" $3 "\t"te"\t" ($9-1)"\t"$4"\t"$8}' | intersectBed -a stdin -b $TmpResultsDir/$TE-donnor.txt -v | intersectBed -a stdin -b $Cent -v >> $OutputDir/$BAMname-insertion-sites.bed
 
     INSERTIONS=$(wc -l $OutputDir/$BAMname-$TE-insertion-sites.bed | awk '{print $1}')
       
-      echo "Split-read analyis done: $INSERTIONS putative insertions identified..."
+    echo "Split-read analyis done: $INSERTIONS putative insertions identified..."
 
     ###merging bam files and moving them to the output folder 
     $samtoolsDir/samtools merge -f $TmpResultsDir/$BAMname-$TE-split.bam $TmpResultsDir/$BAMname-$TE-up.bam $TmpResultsDir/$BAMname-$TE-down.bam 2>> $TmpDir/log.txt
     $samtoolsDir/samtools sort $TmpResultsDir/$BAMname-$TE-split.bam -o $OutputDir/$BAMname-$TE-split.bam 2>> $TmpDir/log.txt
     $samtoolsDir/samtools index $OutputDir/$BAMname-$TE-split.bam 2>> $TmpDir/log.txt
 
-    #rm -r -f $TmpResultsDir
+    rm -r -f $TmpResultsDir
 
     ENDTIME=$(date +%s)
       echo "It takes $((ENDTIME-STARTTIME)) seconds to analyse $TE."
@@ -404,4 +395,4 @@ cat TE_names.txt | while read line ; do
 done
 
 mv $TmpDir/log.txt $OutputDir
-#rm -r -f $TmpDir
+rm -r -f $TmpDir
